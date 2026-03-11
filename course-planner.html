@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CourseMap — University Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2eb;
+    --surface: #fdfaf4;
+    --surface2: #ede9df;
+    --ink: #1a1714;
+    --ink2: #5a5248;
+    --ink3: #9a9088;
+    --accent: #c8552a;
+    --accent2: #e8a87c;
+    --gold: #d4a017;
+    --green: #3a7d44;
+    --border: #d8d2c4;
+    --shadow: rgba(26,23,20,0.08);
+    --radius: 4px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 10% 0%, rgba(200,85,42,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 100%, rgba(212,160,23,0.06) 0%, transparent 50%);
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ---- BUTTONS ---- */
+  .btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--ink2);
+  }
+  .btn-ghost:hover { border-color: var(--ink2); color: var(--ink); background: var(--surface2); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #b04820; }
+  .btn-gold {
+    background: var(--gold);
+    color: #fff;
+    border-color: var(--gold);
+  }
+  .btn-gold:hover { background: #b88a10; }
+  .btn-sm { padding: 5px 10px; font-size: 0.65rem; }
+  .btn-danger { background: transparent; border-color: #e05050; color: #e05050; }
+  .btn-danger:hover { background: #e05050; color: #fff; }
+
+  /* ---- TABS ---- */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--border);
+  }
+  .tab {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 13px 20px;
+    cursor: pointer;
+    color: var(--ink3);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tab:hover { color: var(--ink2); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ---- LAYOUT ---- */
+  .main { max-width: 1200px; margin: 0 auto; padding: 32px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ---- SECTION TITLE ---- */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+  .section-sub {
+    font-size: 0.82rem;
+    color: var(--ink3);
+    margin-top: 3px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ---- FORM ---- */
+  .form-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .form-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 160px; }
+  .form-group label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink3);
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--accent);
+  }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+
+  /* ---- TAG INPUT ---- */
+  .tag-input-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 7px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    cursor: text;
+    transition: border-color 0.15s;
+    min-height: 42px;
+    align-items: center;
+  }
+  .tag-input-wrapper:focus-within { border-color: var(--accent); }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--accent2);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+  .tag button {
+    background: none; border: none; cursor: pointer;
+    color: var(--ink); font-size: 0.85rem; line-height: 1;
+    padding: 0; opacity: 0.6;
+  }
+  .tag button:hover { opacity: 1; }
+  .tag-input-wrapper input {
+    border: none !important;
+    padding: 2px 4px !important;
+    background: transparent !important;
+    font-size: 0.83rem;
+    min-width: 80px;
+    flex: 1;
+    outline: none;
+  }
+
+  /* ---- COURSE GRID ---- */
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .course-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+    box-shadow: 0 2px 6px var(--shadow);
+    transition: box-shadow 0.15s, transform 0.15s;
+    position: relative;
+  }
+  .course-card:hover { box-shadow: 0 4px 16px var(--shadow); transform: translateY(-1px); }
+  .course-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .course-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .course-credits {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--ink3);
+    background: var(--surface2);
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .course-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .course-desc {
+    font-size: 0.8rem;
+    color: var(--ink2);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .prereq-list { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+  .prereq-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--ink2);
+  }
+  .prereq-badge.missing { border-color: #e05050; color: #e05050; background: #fff0f0; }
+  .prereq-badge.met { border-color: var(--green); color: var(--green); background: #f0fff4; }
+  .course-card-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .no-prereq { font-size: 0.75rem; color: var(--ink3); font-style: italic; }
+
+  /* ---- SEMESTER PLANNER ---- */
+  .semester-strip {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+    scroll-snap-type: x mandatory;
+  }
+  .semester-col {
+    flex: 0 0 220px;
+    scroll-snap-align: start;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  .semester-head {
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .semester-head.fall { background: #5a3e28; }
+  .semester-head.winter { background: #2a3e5a; }
+  .semester-head.spring { background: #2a5a3e; }
+  .semester-head.summer { background: #5a4a1a; }
+  .semester-body { padding: 10px; min-height: 120px; }
+  .planned-course {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 9px;
+    margin-bottom: 7px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 0.78rem;
+  }
+  .planned-course .pc-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .planned-course .pc-name {
+    font-size: 0.75rem;
+    color: var(--ink2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+  }
+  .planned-course.has-issue { border-color: #e0a030; background: #fffbf0; }
+  .planned-course.has-error { border-color: #e05050; background: #fff0f0; }
+  .sem-credits {
+    font-size: 0.65rem;
+    opacity: 0.8;
+  }
+  .add-sem-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px;
+    width: 100%;
+    text-align: center;
+    border: 1.5px dashed var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--ink3);
+    background: transparent;
+    transition: all 0.15s;
+    flex: 0 0 180px;
+    align-self: flex-start;
+  }
+  .add-sem-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ---- SEQUENCE VIEW ---- */
+  .seq-legend {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .legend-item {
+    display: flex; gap: 6px; align-items: center;
+    font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--ink2);
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ---- SEARCH / FILTER ---- */
+  .filter-bar {
+    display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+  }
+  .filter-bar input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    padding: 9px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--ink);
+    outline: none;
+    flex: 1;
+    min-width: 180px;
+    transition: border-color 0.15s;
+  }
+  .filter-bar input:focus { border-color: var(--accent); }
+
+  /* ---- MODAL ---- */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,23,20,0.55);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+    animation: modalIn 0.18s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+  /* ---- TOAST ---- */
+  .toast {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    background: var(--ink);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    padding: 11px 18px;
+    border-radius: 4px;
+    z-index: 999;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+
+  /* ---- EMPTY STATE ---- */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink3);
+  }
+  .empty-state .emoji { font-size: 2.5rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.9rem; }
+  .empty-state strong {
+    font-family: 'Playfair Display', serif;
+    color: var(--ink2);
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* ---- IMPORT/EXPORT ---- */
+  .code-block {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    background: var(--ink);
+    color: #e8e0d0;
+    padding: 16px;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 200px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+
+  /* ---- PROGRESS BAR ---- */
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 20px;
+    height: 7px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 20px;
+    transition: width 0.4s ease;
+  }
+
+  /* ---- STATS ROW ---- */
+  .stats-row {
+    display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 22px;
+    flex: 1;
+    min-width: 130px;
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.green { color: var(--green); }
+
+  /* ---- SCROLLBAR ---- */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 600px) {
+    header { padding: 14px 18px; }
+    .main { padding: 18px; }
+    .tabs { padding: 0 18px; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Course<span>Map</span></div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="openImport()">↑ Import</button>
+    <button class="btn btn-gold" onclick="exportData()">↓ Export</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('courses')">Courses</div>
+  <div class="tab" onclick="switchTab('planner')">Planner</div>
+  <div class="tab" onclick="switchTab('sequence')">Sequence</div>
+</div>
+
+<div class="main">
+
+  <!-- ===== COURSES PANEL ===== -->
+  <div class="panel active" id="panel-courses">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Course Catalog</div>
+        <div class="section-sub">Add and manage your courses and prerequisites</div>
+      </div>
+      <button class="btn btn-primary" onclick="openAddCourse()">+ Add Course</button>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" id="course-search" placeholder="Search by code or name…" oninput="renderCourses()">
+    </div>
+
+    <div class="stats-row" id="stats-row"></div>
+    <div class="course-grid" id="course-grid"></div>
+  </div>
+
+  <!-- ===== PLANNER PANEL ===== -->
+  <div class="panel" id="panel-planner">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Semester Planner</div>
+        <div class="section-sub">Drag courses into semesters and check prerequisite order</div>
+      </div>
+      <button class="btn btn-primary" onclick="openAddSemester()">+ Add Semester</button>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <div class="form-group">
+          <label>Add course to semester</label>
+          <div style="display:flex;gap:8px;">
+            <select id="plan-course-select" style="flex:1;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:9px 12px;border:1.5px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ink);outline:none;"></select>
+            <select id="plan-sem-select" style="flex:1;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:9px 12px;border:1.5px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ink);outline:none;"></select>
+            <button class="btn btn-primary" onclick="addToPlanner()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="semester-strip" id="semester-strip"></div>
+    <div id="planner-issues"></div>
+  </div>
+
+  <!-- ===== SEQUENCE PANEL ===== -->
+  <div class="panel" id="panel-sequence">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Prerequisite Sequence</div>
+        <div class="section-sub">Visualize the dependency chain for any course</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:flex-end;">
+      <div class="form-group" style="flex:1;min-width:200px;">
+        <label>Target course</label>
+        <select id="seq-course-select" onchange="renderSequence()" style="font-family:'DM Sans',sans-serif;font-size:.85rem;padding:9px 12px;border:1.5px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ink);outline:none;"></select>
+      </div>
+      <div class="form-group" style="flex:1;min-width:200px;">
+        <label>Completed courses (mark as done)</label>
+        <div style="display:flex;gap:8px;">
+          <select id="completed-select" style="flex:1;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:9px 12px;border:1.5px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ink);outline:none;"></select>
+          <button class="btn btn-ghost" onclick="toggleCompleted()">Toggle</button>
+        </div>
+      </div>
+    </div>
+    <div class="seq-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#3a7d44"></div>Completed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c8552a"></div>Target</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#d4a017"></div>Required (not done)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#9a9088"></div>Optional / unrelated</div>
+    </div>
+    <div id="sequence-view"></div>
+  </div>
+
+</div>
+
+<!-- ===== MODALS ===== -->
+<!-- Add/Edit Course -->
+<div class="modal-overlay" id="course-modal">
+  <div class="modal">
+    <div class="modal-title" id="course-modal-title">Add Course</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Course Code *</label>
+        <input type="text" id="f-code" placeholder="e.g. CS 101" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="form-group">
+        <label>Credits</label>
+        <input type="number" id="f-credits" placeholder="3" min="0" max="12">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label>Course Name *</label>
+        <input type="text" id="f-name" placeholder="e.g. Introduction to Computer Science">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="Brief course description…"></textarea>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label>Prerequisites (type code + Enter)</label>
+      <div class="tag-input-wrapper" id="prereq-tag-wrapper">
+        <input type="text" id="prereq-input" placeholder="e.g. MATH 101…" onkeydown="handlePrereqKey(event)">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('course-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCourse()">Save Course</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Semester -->
+<div class="modal-overlay" id="sem-modal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-title">Add Semester</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Term</label>
+        <select id="f-sem-term">
+          <option>Fall</option>
+          <option>Winter</option>
+          <option>Spring</option>
+          <option>Summer</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Year</label>
+        <input type="number" id="f-sem-year" placeholder="2025" min="2000" max="2099">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('sem-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addSemester()">Add Semester</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <div class="modal-title">Import Data</div>
+    <p style="font-size:.83rem;color:var(--ink2);margin-bottom:14px;">Paste your exported CourseMap code below. This will <strong>replace</strong> your current data.</p>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label>Import Code</label>
+      <textarea id="import-code" style="font-family:'DM Mono',monospace;font-size:0.72rem;min-height:120px;resize:vertical;" placeholder="Paste code here…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('import-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="importData()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal">
+    <div class="modal-title">Export Data</div>
+    <p style="font-size:.83rem;color:var(--ink2);margin-bottom:14px;">Copy this code to save your CourseMap data. Paste it back using Import.</p>
+    <div class="code-block" id="export-code"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('export-modal')">Close</button>
+      <button class="btn btn-primary" onclick="copyExport()">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  courses: [],   // {id, code, name, desc, credits, prereqs:[code,...]}
+  semesters: [], // {id, term, year, courses:[code,...]}
+  completed: [], // [code,...]
+  editingId: null,
+  prereqTags: [],
+};
+
+// Seed with example data
+function seedData() {
+  state.courses = [
+    {id:'c1',code:'MATH 101',name:'Calculus I',desc:'Limits, derivatives, and integrals.',credits:3,prereqs:[]},
+    {id:'c2',code:'MATH 102',name:'Calculus II',desc:'Techniques of integration, series.',credits:3,prereqs:['MATH 101']},
+    {id:'c3',code:'MATH 201',name:'Linear Algebra',desc:'Matrices, vector spaces, and linear maps.',credits:3,prereqs:['MATH 101']},
+    {id:'c4',code:'CS 101',name:'Intro to Programming',desc:'Fundamentals of programming using Python.',credits:3,prereqs:[]},
+    {id:'c5',code:'CS 201',name:'Data Structures',desc:'Arrays, linked lists, trees, and graphs.',credits:3,prereqs:['CS 101']},
+    {id:'c6',code:'CS 301',name:'Algorithms',desc:'Algorithm design and complexity analysis.',credits:3,prereqs:['CS 201','MATH 102']},
+    {id:'c7',code:'CS 350',name:'Operating Systems',desc:'Processes, memory, and file systems.',credits:3,prereqs:['CS 201']},
+    {id:'c8',code:'STAT 201',name:'Probability & Statistics',desc:'Probability theory and statistical inference.',credits:3,prereqs:['MATH 101']},
+  ];
+  state.semesters = [
+    {id:'s1',term:'Fall',year:2024,courses:['MATH 101','CS 101']},
+    {id:'s2',term:'Winter',year:2025,courses:['MATH 102','CS 201','STAT 201']},
+    {id:'s3',term:'Spring',year:2025,courses:['MATH 201','CS 301']},
+  ];
+  state.completed = ['MATH 101','CS 101'];
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function genId() { return 'x' + Math.random().toString(36).slice(2,9); }
+
+function getCourse(code) {
+  return state.courses.find(c => c.code === code);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['courses','planner','sequence'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'planner') renderPlanner();
+  if (name === 'sequence') renderSequencePanel();
+}
+
+// ============================================================
+// COURSES
+// ============================================================
+function openAddCourse(id) {
+  state.editingId = id || null;
+  state.prereqTags = [];
+  const modal = document.getElementById('course-modal');
+  document.getElementById('course-modal-title').textContent = id ? 'Edit Course' : 'Add Course';
+  if (id) {
+    const c = state.courses.find(x => x.id === id);
+    document.getElementById('f-code').value = c.code;
+    document.getElementById('f-name').value = c.name;
+    document.getElementById('f-credits').value = c.credits || '';
+    document.getElementById('f-desc').value = c.desc || '';
+    state.prereqTags = [...c.prereqs];
+  } else {
+    document.getElementById('f-code').value = '';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-credits').value = '';
+    document.getElementById('f-desc').value = '';
+  }
+  renderPrereqTags();
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('f-code').focus(), 80);
+}
+
+function handlePrereqKey(e) {
+  const inp = document.getElementById('prereq-input');
+  const val = inp.value.trim().toUpperCase();
+  if ((e.key === 'Enter' || e.key === ',') && val) {
+    e.preventDefault();
+    if (!state.prereqTags.includes(val)) {
+      state.prereqTags.push(val);
+      renderPrereqTags();
+    }
+    inp.value = '';
+  }
+  if (e.key === 'Backspace' && !inp.value && state.prereqTags.length) {
+    state.prereqTags.pop();
+    renderPrereqTags();
+  }
+}
+
+function removePrereqTag(tag) {
+  state.prereqTags = state.prereqTags.filter(t => t !== tag);
+  renderPrereqTags();
+}
+
+function renderPrereqTags() {
+  const wrapper = document.getElementById('prereq-tag-wrapper');
+  const inp = document.getElementById('prereq-input');
+  wrapper.querySelectorAll('.tag').forEach(t => t.remove());
+  state.prereqTags.forEach(tag => {
+    const el = document.createElement('span');
+    el.className = 'tag';
+    el.innerHTML = `${tag}<button onclick="removePrereqTag('${tag}')">×</button>`;
+    wrapper.insertBefore(el, inp);
+  });
+}
+
+function saveCourse() {
+  const code = document.getElementById('f-code').value.trim().toUpperCase();
+  const name = document.getElementById('f-name').value.trim();
+  if (!code || !name) { toast('Code and Name are required.'); return; }
+
+  // flush partial input
+  const inp = document.getElementById('prereq-input');
+  if (inp.value.trim()) {
+    const v = inp.value.trim().toUpperCase();
+    if (!state.prereqTags.includes(v)) state.prereqTags.push(v);
+    inp.value = '';
+  }
+
+  if (state.editingId) {
+    const idx = state.courses.findIndex(c => c.id === state.editingId);
+    const oldCode = state.courses[idx].code;
+    state.courses[idx] = {
+      ...state.courses[idx],
+      code, name,
+      credits: +document.getElementById('f-credits').value || 0,
+      desc: document.getElementById('f-desc').value.trim(),
+      prereqs: [...state.prereqTags],
+    };
+    // update refs if code changed
+    if (oldCode !== code) {
+      state.courses.forEach(c => {
+        c.prereqs = c.prereqs.map(p => p === oldCode ? code : p);
+      });
+      state.semesters.forEach(s => {
+        s.courses = s.courses.map(x => x === oldCode ? code : x);
+      });
+      state.completed = state.completed.map(x => x === oldCode ? code : x);
+    }
+    toast('Course updated.');
+  } else {
+    if (state.courses.find(c => c.code === code)) { toast('Course code already exists.'); return; }
+    state.courses.push({
+      id: genId(), code, name,
+      credits: +document.getElementById('f-credits').value || 0,
+      desc: document.getElementById('f-desc').value.trim(),
+      prereqs: [...state.prereqTags],
+    });
+    toast('Course added.');
+  }
+  closeModal('course-modal');
+  renderCourses();
+}
+
+function deleteCourse(id) {
+  const c = state.courses.find(x => x.id === id);
+  if (!confirm(`Delete ${c.code}?`)) return;
+  state.courses = state.courses.filter(x => x.id !== id);
+  state.semesters.forEach(s => { s.courses = s.courses.filter(x => x !== c.code); });
+  state.courses.forEach(x => { x.prereqs = x.prereqs.filter(p => p !== c.code); });
+  state.completed = state.completed.filter(x => x !== c.code);
+  renderCourses();
+  toast('Course deleted.');
+}
+
+function renderCourses() {
+  const q = document.getElementById('course-search').value.toLowerCase();
+  const filtered = state.courses.filter(c =>
+    c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
+  );
+  const grid = document.getElementById('course-grid');
+
+  if (!state.courses.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="emoji">📚</div><strong>No courses yet</strong><p>Add your first course to get started.</p></div>`;
+    renderStats();
+    return;
+  }
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="emoji">🔍</div><strong>No results</strong><p>Try a different search.</p></div>`;
+    renderStats();
+    return;
+  }
+
+  grid.innerHTML = filtered.map(c => {
+    const prereqHTML = c.prereqs.length
+      ? c.prereqs.map(p => {
+          const exists = state.courses.find(x => x.code === p);
+          return `<span class="prereq-badge ${exists ? '' : 'missing'}" title="${exists ? '' : 'Course not in catalog'}">${p}</span>`;
+        }).join('')
+      : `<span class="no-prereq">No prerequisites</span>`;
+    return `
+      <div class="course-card">
+        <div class="course-card-header">
+          <span class="course-code">${c.code}</span>
+          <span class="course-credits">${c.credits || '?'} cr</span>
+        </div>
+        <div class="course-name">${c.name}</div>
+        ${c.desc ? `<div class="course-desc">${c.desc}</div>` : ''}
+        <div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--ink3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;">Prerequisites</div>
+        <div class="prereq-list">${prereqHTML}</div>
+        <div class="course-card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openAddCourse('${c.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCourse('${c.id}')">Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+  renderStats();
+}
+
+function renderStats() {
+  const total = state.courses.length;
+  const totalCredits = state.courses.reduce((a,c) => a + (c.credits||0), 0);
+  const planned = state.semesters.reduce((a,s) => a + s.courses.length, 0);
+  const done = state.completed.length;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total Courses</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Credits</div><div class="stat-value accent">${totalCredits}</div></div>
+    <div class="stat-card"><div class="stat-label">Planned</div><div class="stat-value">${planned}</div></div>
+    <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value green">${done}</div></div>
+  `;
+}
+
+// ============================================================
+// PLANNER
+// ============================================================
+function openAddSemester() {
+  document.getElementById('f-sem-year').value = new Date().getFullYear();
+  document.getElementById('sem-modal').classList.add('open');
+}
+
+function addSemester() {
+  const term = document.getElementById('f-sem-term').value;
+  const year = +document.getElementById('f-sem-year').value;
+  if (!year) { toast('Enter a valid year.'); return; }
+  const label = `${term} ${year}`;
+  if (state.semesters.find(s => s.term === term && s.year === year)) {
+    toast('Semester already exists.'); return;
+  }
+  state.semesters.push({id: genId(), term, year, courses: []});
+  state.semesters.sort((a,b) => a.year - b.year || ['Winter','Spring','Summer','Fall'].indexOf(a.term) - ['Winter','Spring','Summer','Fall'].indexOf(b.term));
+  closeModal('sem-modal');
+  renderPlanner();
+  toast(`${label} added.`);
+}
+
+function deleteSemester(id) {
+  const s = state.semesters.find(x => x.id === id);
+  if (!confirm(`Remove ${s.term} ${s.year}?`)) return;
+  state.semesters = state.semesters.filter(x => x.id !== id);
+  renderPlanner();
+}
+
+function addToPlanner() {
+  const code = document.getElementById('plan-course-select').value;
+  const semId = document.getElementById('plan-sem-select').value;
+  if (!code || !semId) { toast('Select a course and semester.'); return; }
+  const sem = state.semesters.find(s => s.id === semId);
+  if (sem.courses.includes(code)) { toast('Course already in this semester.'); return; }
+  // remove from other semesters
+  state.semesters.forEach(s => { s.courses = s.courses.filter(c => c !== code); });
+  sem.courses.push(code);
+  renderPlanner();
+  toast(`${code} added to ${sem.term} ${sem.year}.`);
+}
+
+function removePlanCourse(semId, code) {
+  const sem = state.semesters.find(s => s.id === semId);
+  sem.courses = sem.courses.filter(c => c !== code);
+  renderPlanner();
+}
+
+function getSemestersBefore(semId) {
+  const idx = state.semesters.findIndex(s => s.id === semId);
+  return state.semesters.slice(0, idx).flatMap(s => s.courses);
+}
+
+function renderPlanner() {
+  // populate selects
+  const cs = document.getElementById('plan-course-select');
+  cs.innerHTML = state.courses.length
+    ? state.courses.map(c => `<option value="${c.code}">${c.code} — ${c.name}</option>`).join('')
+    : '<option value="">No courses added</option>';
+  const ss = document.getElementById('plan-sem-select');
+  ss.innerHTML = state.semesters.length
+    ? state.semesters.map(s => `<option value="${s.id}">${s.term} ${s.year}</option>`).join('')
+    : '<option value="">No semesters</option>';
+
+  const strip = document.getElementById('semester-strip');
+  if (!state.semesters.length) {
+    strip.innerHTML = `<div class="empty-state" style="min-width:100%"><div class="emoji">🗓️</div><strong>No semesters yet</strong><p>Add a semester to start planning.</p></div>`;
+    document.getElementById('planner-issues').innerHTML = '';
+    return;
+  }
+
+  let issues = [];
+  strip.innerHTML = state.semesters.map(sem => {
+    const before = getSemestersBefore(sem.id);
+    const credits = sem.courses.reduce((a,code) => {
+      const c = getCourse(code); return a + (c ? c.credits||0 : 0);
+    }, 0);
+    const coursesHTML = sem.courses.length
+      ? sem.courses.map(code => {
+          const c = getCourse(code);
+          if (!c) return `<div class="planned-course has-error">
+            <div><div class="pc-code">${code}</div><div class="pc-name" style="color:#e05050">Not in catalog</div></div>
+            <button class="btn btn-danger btn-sm" onclick="removePlanCourse('${sem.id}','${code}')">×</button>
+          </div>`;
+          const missingPrereqs = c.prereqs.filter(p => !before.includes(p) && !state.completed.includes(p));
+          if (missingPrereqs.length) issues.push({sem: `${sem.term} ${sem.year}`, code, missing: missingPrereqs});
+          const cls = missingPrereqs.length ? 'has-error' : '';
+          return `<div class="planned-course ${cls}" title="${missingPrereqs.length ? 'Missing prereqs: '+missingPrereqs.join(', ') : ''}">
+            <div>
+              <div class="pc-code">${c.code}</div>
+              <div class="pc-name">${c.name}</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="removePlanCourse('${sem.id}','${c.code}')">×</button>
+          </div>`;
+        }).join('')
+      : `<div style="font-size:.75rem;color:var(--ink3);text-align:center;padding:16px 0;">Empty</div>`;
+    const termClass = sem.term.toLowerCase();
+    return `
+      <div class="semester-col">
+        <div class="semester-head ${termClass}">
+          <span>${sem.term} ${sem.year}</span>
+          <span class="sem-credits">${credits} cr</span>
+        </div>
+        <div class="semester-body">${coursesHTML}</div>
+        <div style="padding:0 10px 10px;">
+          <button class="btn btn-danger btn-sm" style="width:100%" onclick="deleteSemester('${sem.id}')">Remove Semester</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // issues panel
+  const ip = document.getElementById('planner-issues');
+  if (issues.length) {
+    ip.innerHTML = `
+      <div style="background:#fff8f0;border:1.5px solid #e0a030;border-radius:6px;padding:16px;margin-top:8px;">
+        <div style="font-family:'DM Mono',monospace;font-size:.72rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#b87010;margin-bottom:10px;">⚠ Prerequisite Issues</div>
+        ${issues.map(i => `
+          <div style="font-size:.82rem;color:var(--ink2);margin-bottom:6px;">
+            <strong style="color:var(--ink)">${i.code}</strong> in <em>${i.sem}</em> — missing: 
+            ${i.missing.map(m => `<span class="prereq-badge missing">${m}</span>`).join(' ')}
+          </div>`).join('')}
+      </div>`;
+  } else {
+    ip.innerHTML = state.semesters.some(s => s.courses.length)
+      ? `<div style="background:#f0fff4;border:1.5px solid #3a7d44;border-radius:6px;padding:12px 16px;font-size:.82rem;color:#2a5a30;">✓ All prerequisite ordering looks good!</div>`
+      : '';
+  }
+}
+
+// ============================================================
+// SEQUENCE
+// ============================================================
+function renderSequencePanel() {
+  const sel = document.getElementById('seq-course-select');
+  const prev = sel.value;
+  sel.innerHTML = state.courses.length
+    ? state.courses.map(c => `<option value="${c.code}" ${c.code===prev?'selected':''}>${c.code} — ${c.name}</option>`).join('')
+    : '<option value="">No courses</option>';
+  const cs2 = document.getElementById('completed-select');
+  cs2.innerHTML = state.courses.map(c => `<option value="${c.code}">${c.code}</option>`).join('');
+  renderSequence();
+}
+
+function toggleCompleted() {
+  const code = document.getElementById('completed-select').value;
+  if (!code) return;
+  if (state.completed.includes(code)) {
+    state.completed = state.completed.filter(c => c !== code);
+    toast(`${code} marked incomplete.`);
+  } else {
+    state.completed.push(code);
+    toast(`${code} marked complete.`);
+  }
+  renderSequence();
+  renderCourses();
+}
+
+function getAllPrereqs(code, visited = new Set()) {
+  if (visited.has(code)) return visited;
+  visited.add(code);
+  const c = getCourse(code);
+  if (c) c.prereqs.forEach(p => getAllPrereqs(p, visited));
+  return visited;
+}
+
+function buildLevels(targetCode) {
+  // BFS from target upward through prereqs
+  const target = getCourse(targetCode);
+  if (!target) return [];
+  const allDeps = getAllPrereqs(targetCode);
+  allDeps.delete(targetCode);
+
+  // Topological sort by prereq depth
+  function depth(code, memo = {}) {
+    if (code in memo) return memo[code];
+    const c = getCourse(code);
+    if (!c || !c.prereqs.length) return (memo[code] = 0);
+    return (memo[code] = 1 + Math.max(...c.prereqs.map(p => depth(p, memo))));
+  }
+
+  const nodes = [...allDeps, targetCode];
+  const maxD = Math.max(...nodes.map(n => depth(n)));
+  const levels = [];
+  for (let d = 0; d <= maxD; d++) {
+    levels.push(nodes.filter(n => depth(n) === d));
+  }
+  return levels;
+}
+
+function renderSequence() {
+  const targetCode = document.getElementById('seq-course-select').value;
+  const view = document.getElementById('sequence-view');
+  if (!targetCode || !state.courses.length) {
+    view.innerHTML = `<div class="empty-state"><div class="emoji">🔗</div><strong>Select a course</strong><p>Choose a target course to see its prerequisite chain.</p></div>`;
+    return;
+  }
+  const levels = buildLevels(targetCode);
+  if (!levels.length) {
+    view.innerHTML = `<div class="empty-state"><div class="emoji">✅</div><strong>No prerequisites</strong><p>${targetCode} has no prerequisite chain.</p></div>`;
+    return;
+  }
+
+  view.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:0;">
+      ${levels.map((level, li) => `
+        <div style="display:flex;align-items:flex-start;gap:0;margin-bottom:0;">
+          <div style="min-width:80px;padding-top:18px;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;text-align:right;padding-right:16px;">
+            ${li === levels.length-1 ? 'Target' : `Level ${li+1}`}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;padding:10px 0 10px 16px;border-left:2px solid var(--border);flex:1;">
+            ${level.map(code => {
+              const c = getCourse(code);
+              const isTarget = code === targetCode;
+              const isDone = state.completed.includes(code);
+              const isReq = !isTarget;
+              let bg = isDone ? '#3a7d44' : isTarget ? '#c8552a' : '#d4a017';
+              let tx = '#fff';
+              return `
+                <div style="
+                  background:${bg};color:${tx};
+                  padding:10px 16px;border-radius:5px;
+                  font-family:'DM Mono',monospace;
+                  box-shadow:0 2px 8px rgba(0,0,0,0.12);
+                  min-width:140px;
+                ">
+                  <div style="font-size:.7rem;font-weight:500;opacity:.85;margin-bottom:2px;">${code}</div>
+                  <div style="font-size:.82rem;font-weight:500;">${c ? c.name : '(unknown)'}</div>
+                  ${c ? `<div style="font-size:.68rem;opacity:.8;margin-top:3px;">${c.credits||'?'} cr${isDone?' · ✓ done':''}</div>` : ''}
+                </div>`;
+            }).join('')}
+          </div>
+        </div>
+        ${li < levels.length-1 ? `<div style="display:flex;gap:0;"><div style="min-width:80px;"></div><div style="width:2px;background:var(--border);margin-left:96px;height:20px;"></div></div>` : ''}
+      `).join('')}
+    </div>
+    <div style="margin-top:24px;padding:16px;background:var(--surface);border:1.5px solid var(--border);border-radius:6px;">
+      <div style="font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px;">Completion Progress</div>
+      ${(() => {
+        const all = [...new Set(levels.flat())];
+        const done = all.filter(c => state.completed.includes(c)).length;
+        const pct = Math.round((done/all.length)*100);
+        return `
+          <div style="font-size:.85rem;color:var(--ink2);">${done} of ${all.length} courses completed (${pct}%)</div>
+          <div class="progress-bar-wrap" style="margin-top:8px;">
+            <div class="progress-bar-fill" style="width:${pct}%"></div>
+          </div>`;
+      })()}
+    </div>
+  `;
+}
+
+// ============================================================
+// IMPORT / EXPORT
+// ============================================================
+function exportData() {
+  const data = btoa(JSON.stringify({
+    courses: state.courses,
+    semesters: state.semesters,
+    completed: state.completed,
+  }));
+  document.getElementById('export-code').textContent = data;
+  document.getElementById('export-modal').classList.add('open');
+}
+
+function copyExport() {
+  navigator.clipboard.writeText(document.getElementById('export-code').textContent)
+    .then(() => toast('Copied to clipboard!'))
+    .catch(() => toast('Copy failed — please select and copy manually.'));
+}
+
+function openImport() {
+  document.getElementById('import-code').value = '';
+  document.getElementById('import-modal').classList.add('open');
+}
+
+function importData() {
+  const code = document.getElementById('import-code').value.trim();
+  try {
+    const parsed = JSON.parse(atob(code));
+    if (!Array.isArray(parsed.courses)) throw new Error();
+    state.courses = parsed.courses || [];
+    state.semesters = parsed.semesters || [];
+    state.completed = parsed.completed || [];
+    closeModal('import-modal');
+    renderAll();
+    toast('Data imported successfully!');
+  } catch {
+    toast('Invalid import code. Please check and try again.');
+  }
+}
+
+// ============================================================
+// CLOSE MODALS ON OVERLAY CLICK
+// ============================================================
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) o.classList.remove('open');
+  });
+});
+
+// ============================================================
+// INIT
+// ============================================================
+function renderAll() {
+  renderCourses();
+  renderPlanner();
+}
+
+seedData();
+renderAll();
+</script>
+</body>
+</html>
